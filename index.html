@@ -420,14 +420,31 @@
             margin-left: 5px;
         }
 
-        /* Status Bar */
-        .status-bar {
-            background: var(--card);
-            padding: 8px;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-sec);
-            border-top: 1px solid var(--border);
+        /* Toast Notification (Replaces Status Bar) */
+        .toast-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast-box.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
         }
 
         /* Pagination */
@@ -455,6 +472,48 @@
             opacity: 0.5;
             cursor: default;
             color: var(--text-sec);
+        }
+
+        /* Tooltip */
+        .h-reads {
+            position: relative;
+        }
+
+        .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            width: max-content;
+            max-width: 200px;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .h-reads:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
@@ -489,12 +548,16 @@
         <div class="settings-card">
             <h2>
                 <span>⚙️ Settings</span>
-                <button class="btn-close" onclick="toggleSettings()" title="Close">
-                    <svg viewBox="0 0 24 24">
-                        <path
-                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                    </svg>
-                </button>
+                <div class="settings-header-left">
+                    <a href="https://github.com/hodolhodol/gitclip#readme" target="_blank" class="btn-help"
+                        title="View Manual">?</a>
+                    <button class="btn-close" onclick="toggleSettings()" title="Close">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </button>
+                </div>
             </h2>
             <div class="input-group">
                 <label>GitHub Token</label>
@@ -505,17 +568,26 @@
                 <input type="text" id="gistId" placeholder="Gist ID">
             </div>
 
-            <div class="input-group">
-                <div style="display:flex; gap:10px;">
-                    <div style="flex:2;">
-                        <label>📱 Device Name</label>
-                        <input type="text" id="devName" placeholder="My Galaxy">
-                    </div>
-                    <div style="flex:1;">
-                        <label>📄 Page Size</label>
-                        <input type="number" id="pageSize" placeholder="10" min="1" max="50">
-                    </div>
+            <div style="display:flex; gap:10px;">
+                <div style="flex:2;">
+                    <label>📱 Device Name</label>
+                    <input type="text" id="devName" placeholder="My Galaxy">
                 </div>
+                <div style="flex:1;">
+                    <label>📄 Page Size</label>
+                    <input type="number" id="pageSize" placeholder="10" min="1" max="50">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>⏳ Retention Period (Auto-Delete)</label>
+                <select id="retentionPeriod"
+                    style="width:100%; padding:10px; border-radius:8px; border:1px solid #d1d1d6; background:var(--bg);">
+                    <option value="24">1 Day (24h)</option>
+                    <option value="72">3 Days (72h)</option>
+                    <option value="168">7 Days</option>
+                    <option value="0">Forever (No Auto-Delete)</option>
+                </select>
             </div>
 
             <div class="input-group secure">
@@ -552,12 +624,18 @@
         <div class="history-section">
             <div class="history-title">
                 <span>Global History (Cloud)</span>
+                <button class="btn-icon" onclick="doDeleteAll()" title="Delete ALL History"
+                    style="color:var(--danger);">
+                    <svg viewBox="0 0 24 24" style="width:18px;height:18px;">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
+                    </svg>
+                </button>
             </div>
             <ul id="historyList" class="history-list"></ul>
         </div>
     </div>
 
-    <div class="status-bar" id="statusBar">Ready</div>
+    <div id="toast" class="toast-box">Ready</div>
 
     <script>
         // --- APP LOGIC (V5.1: Pagination & Decryption) ---
@@ -571,13 +649,44 @@
             devName: document.getElementById('devName'),
             pageSize: document.getElementById('pageSize'),
             encKey: document.getElementById('encKey'),
+            retention: document.getElementById('retentionPeriod'),
             overlay: document.getElementById('settingsOverlay'),
-            status: document.getElementById('statusBar'),
+            toast: document.getElementById('toast'),
             list: document.getElementById('historyList'),
             secureIcon: document.getElementById('secureIcon')
         };
 
-        let config = { token: '', gistId: '', devName: '', encKey: '', pageSize: 10 };
+        let toastTimeout;
+
+        // ... (Config & Init logic remains same) ...
+
+        // ... (Settings & Save Logic) ...
+
+        // Replaced setStatus with showToast
+        function setStatus(msg) {
+            showToast(msg);
+        }
+
+        function showToast(msg) {
+            els.toast.innerText = msg;
+            els.toast.classList.add('show');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+
+            toastTimeout = setTimeout(() => {
+                els.toast.classList.remove('show');
+            }, 3000);
+        }
+
+        function doClear() { els.box.value = ''; showToast('Cleared'); }
+        function doCopy() {
+            if (!els.box.value) return;
+            els.box.select();
+            els.box.setSelectionRange(0, 99999);
+            try { document.execCommand('copy'); showToast('Copied to Clipboard!'); } catch (e) { alert(e); }
+        }
+
+        let config = { token: '', gistId: '', devName: '', encKey: '', pageSize: 10, retention: 0 };
         let cloudHistory = []; // Stores the synchronized list
 
         // Init
@@ -587,12 +696,14 @@
             config.devName = localStorage.getItem('dev_name') || 'Unknown Device';
             config.encKey = localStorage.getItem('enc_key') || '';
             config.pageSize = localStorage.getItem('page_size') || 10;
+            config.retention = parseInt(localStorage.getItem('retention_hours')) || 0;
 
             if (config.token) els.token.value = config.token;
             if (config.gistId) els.gist.value = config.gistId;
             if (config.devName) els.devName.value = config.devName;
             if (config.pageSize) els.pageSize.value = config.pageSize;
             if (config.encKey) els.encKey.value = config.encKey;
+            els.retention.value = config.retention;
 
             updateSecureIcon();
 
@@ -622,6 +733,7 @@
             const d = els.devName.value.trim();
             const k = els.encKey.value.trim();
             const p = els.pageSize.value.trim() || 10;
+            const r = els.retention.value;
 
             if (t && g && d) {
                 localStorage.setItem('gh_token', t);
@@ -629,8 +741,9 @@
                 localStorage.setItem('dev_name', d);
                 localStorage.setItem('enc_key', k);
                 localStorage.setItem('page_size', p);
+                localStorage.setItem('retention_hours', r);
 
-                config = { token: t, gistId: g, devName: d, encKey: k, pageSize: p };
+                config = { token: t, gistId: g, devName: d, encKey: k, pageSize: p, retention: parseInt(r) };
 
                 updateSecureIcon();
                 toggleSettings();
@@ -638,6 +751,27 @@
                 doSync(true);
             } else {
                 alert('Token, Gist ID, and Device Name are required.');
+            }
+        }
+
+        async function doDeleteAll() {
+            if (!confirm("⚠️ WARNING: This will PERMANENTLY DELETE ALL history from the cloud.\nAre you sure?")) return;
+
+            setStatus('Deleting All...');
+            try {
+                // Delete OLD_FILE (clipboard.txt) and Empty DATA_FILE
+                const filesToDelete = {};
+                filesToDelete[OLD_FILE] = null; // Delete legacy file
+                filesToDelete[DATA_FILE] = { content: "[]" }; // Empty array
+
+                await saveCloudData(null, filesToDelete);
+
+                cloudHistory = [];
+                renderHistory();
+                setStatus('All History Deleted.');
+            } catch (e) {
+                alert("Delete Failed: " + e);
+                setStatus('Delete Failed');
             }
         }
 
@@ -699,7 +833,7 @@
             doSync(true);
         }
 
-        function setStatus(msg) { els.status.innerText = msg; }
+
         function doClear() { els.box.value = ''; setStatus('Cleared'); }
         function doCopy() {
             if (!els.box.value) return;
@@ -750,20 +884,44 @@
             if (!res.ok) throw new Error(res.status);
             const data = await res.json();
 
+            let loadedData = [];
             if (data.files[DATA_FILE]) {
-                return JSON.parse(data.files[DATA_FILE].content);
-            }
-            if (data.files[OLD_FILE]) {
+                loadedData = JSON.parse(data.files[DATA_FILE].content);
+            } else if (data.files[OLD_FILE]) {
                 const oldContent = data.files[OLD_FILE].content;
-                return [{ content: oldContent, device: "Old Version", time: new Date().toISOString(), reads: 0 }];
+                loadedData = [{ content: oldContent, device: "Old Version", time: new Date().toISOString(), reads: 0 }];
             }
-            return [];
+
+            // Lazy Expiration Logic
+            if (config.retention > 0 && loadedData.length > 0) {
+                const now = new Date().getTime();
+                const retentionMs = config.retention * 60 * 60 * 1000;
+
+                const validData = loadedData.filter(item => {
+                    const itemTime = new Date(item.time).getTime();
+                    return (now - itemTime) < retentionMs;
+                });
+
+                if (validData.length < loadedData.length) {
+                    console.log(`Auto-Deleted ${loadedData.length - validData.length} expired items.`);
+                    // Save filtered data back to cloud (Background)
+                    saveCloudData(validData);
+                    return validData;
+                }
+            }
+
+            return loadedData;
         }
 
-        async function saveCloudData(historyArray) {
-            if (historyArray.length > 50) historyArray = historyArray.slice(0, 50);
-            const files = {};
-            files[DATA_FILE] = { content: JSON.stringify(historyArray) };
+        async function saveCloudData(historyArray, customFiles = null) {
+            let files = {};
+
+            if (customFiles) {
+                files = customFiles; // Direct file manipulation
+            } else {
+                if (historyArray.length > 50) historyArray = historyArray.slice(0, 50);
+                files[DATA_FILE] = { content: JSON.stringify(historyArray) };
+            }
 
             await fetch(`https://api.github.com/gists/${config.gistId}`, {
                 method: 'PATCH',
@@ -803,8 +961,13 @@
 
                 els.box.value = content;
 
-                topItem.reads = (topItem.reads || 0) + 1;
-                saveCloudData(cloudHistory); // Read count sync
+                // Unique Read Count Logic (Top Item)
+                if (!topItem.readBy) topItem.readBy = [];
+                if (!topItem.readBy.includes(config.devName)) {
+                    topItem.readBy.push(config.devName);
+                    topItem.reads = topItem.readBy.length; // Sync legacy
+                    saveCloudData(cloudHistory);
+                }
 
                 renderHistory();
                 setStatus('Loaded!');
@@ -831,7 +994,8 @@
                     content: content,
                     device: config.devName,
                     time: new Date().toISOString(),
-                    reads: 0
+                    reads: 0,
+                    readBy: [] // Init empty array
                 };
 
                 cloudHistory.unshift(newItem);
@@ -895,7 +1059,21 @@
 
                 const date = new Date(item.time);
                 const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const readCount = item.reads || 0;
+
+                // Read Count Logic
+                let readCount = 0;
+                let readersList = "";
+
+                if (Array.isArray(item.readBy)) {
+                    readCount = item.readBy.length;
+                    if (readCount > 0) readersList = item.readBy.join('\n');
+                } else if (item.reads) {
+                    readCount = item.reads; // Legacy Support
+                    if (readCount > 0) readersList = "(Legacy Count: " + item.reads + ")";
+                }
+
+                if (!readersList) readersList = "No readers yet";
+
                 const readColor = readCount > 0 ? '#4caf50' : '#ccc';
 
                 // Active highlight
@@ -910,7 +1088,10 @@
                 </div>
                 <div class="h-header">
                      <div class="h-preview" style="${isEncrypted ? 'color:#999;font-style:italic;' : ''}">${escapeHtml(previewText)}</div>
-                     <span class="h-reads" style="color:${readColor}">👁️ ${readCount}</span>
+                     <span class="h-reads" style="color:${readColor}; cursor:pointer;" title="">
+                        👁️ ${readCount}
+                        <span class="tooltip-text">${escapeHtml(readersList)}</span>
+                     </span>
                 </div>
             `;
 
@@ -928,10 +1109,17 @@
                     }
                     els.box.value = content;
 
-                    // Increment read count
-                    item.reads = (item.reads || 0) + 1;
-                    renderHistory(); // Re-render to update read count
-                    saveCloudData(cloudHistory);
+                    // Unique Read Logic
+                    if (!item.readBy) item.readBy = [];
+                    // Recover legacy count if needed? No, just start tracking names.
+
+                    if (!item.readBy.includes(config.devName)) {
+                        item.readBy.push(config.devName);
+                        // Update legacy field just in case
+                        item.reads = item.readBy.length;
+                        renderHistory();
+                        saveCloudData(cloudHistory);
+                    }
                 };
 
                 list.appendChild(li);

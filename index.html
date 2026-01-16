@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GitClip</title>
+    <title>GitClip Cloud</title>
 
     <!-- PWA Support -->
     <link rel="manifest" href="manifest.json">
@@ -28,6 +28,7 @@
             --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             --danger: #ff3b30;
             --success: #34c759;
+            --warn: #ff9500;
         }
 
         body {
@@ -36,7 +37,6 @@
             color: var(--text);
             margin: 0;
             padding: 0;
-            /* Remove padding to use full screen on mobile */
             height: 100vh;
             display: flex;
             flex-direction: column;
@@ -62,6 +62,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .lock-icon {
+            display: none;
+            color: var(--success);
+        }
+
+        .lock-icon.active {
+            display: block;
         }
 
         .btn-icon {
@@ -138,6 +147,43 @@
             border-bottom: 1px solid var(--border);
             padding-bottom: 10px;
             margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-help {
+            text-decoration: none;
+            font-size: 0.9rem;
+            color: var(--primary);
+            background: #e3f2fd;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .btn-close {
+            background: #f2f2f7;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #8e8e93;
+        }
+
+        .btn-close svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
         }
 
         .input-group {
@@ -162,6 +208,11 @@
             background: var(--bg);
         }
 
+        .input-group.secure input {
+            border-color: var(--success);
+            background: #f0fdf4;
+        }
+
         .btn-confirm {
             background: var(--primary);
             color: white;
@@ -171,6 +222,20 @@
             border-radius: 10px;
             font-weight: 600;
             font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 10px;
+            /* Space for extra button */
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
         }
 
@@ -240,7 +305,6 @@
             border-radius: 16px;
             resize: none;
             font-size: 16px;
-            /* Prevents zoom on iOS */
             font-family: monospace;
             box-sizing: border-box;
             background: var(--card);
@@ -287,10 +351,16 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             cursor: pointer;
             transition: background 0.2s;
+            position: relative;
         }
 
         .history-item:active {
             background: #e5e5ea;
+        }
+
+        /* Currently Active/Loaded item style */
+        .history-item.active-item {
+            border: 2px solid var(--primary);
         }
 
         .h-header {
@@ -300,26 +370,41 @@
             margin-bottom: 4px;
         }
 
-        .h-badge {
+        .h-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .h-device {
             font-size: 0.75rem;
-            padding: 3px 8px;
-            border-radius: 10px;
             font-weight: bold;
-        }
-
-        .h-load {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .h-save {
+            color: var(--primary);
             background: #e3f2fd;
-            color: #1565c0;
+            padding: 2px 6px;
+            border-radius: 6px;
         }
 
         .h-time {
             font-size: 0.75rem;
             color: #999;
+        }
+
+        .h-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .h-reads {
+            font-size: 0.7rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: #f5f5f5;
+            padding: 2px 5px;
+            border-radius: 4px;
         }
 
         .h-preview {
@@ -328,6 +413,11 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        .enc-mark {
+            font-size: 0.8em;
+            margin-left: 5px;
         }
 
         /* Status Bar */
@@ -339,54 +429,117 @@
             color: var(--text-sec);
             border-top: 1px solid var(--border);
         }
+
+        /* Pagination */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: var(--text-sec);
+            border-top: 1px solid var(--border);
+        }
+
+        .pagination-controls button {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 5px 12px;
+            border-radius: 8px;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: default;
+            color: var(--text-sec);
+        }
     </style>
 </head>
 
 <body>
 
     <header>
-        <h1>📋 GitClip</h1>
-        <button class="btn-icon" onclick="toggleSettings()">
-            <!-- Gear Icon -->
-            <svg viewBox="0 0 24 24">
+        <h1>
+            📋 GitClip
+            <svg id="secureIcon" class="lock-icon" viewBox="0 0 24 24" style="width:18px;height:18px;fill:#34c759;">
                 <path
-                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.04.17 0 .4.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.04-.22 0-.45-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                    d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z" />
             </svg>
-        </button>
+        </h1>
+        <div style="display:flex; gap:5px;">
+            <a href="https://github.com/hodolhodol/gitclip#readme" target="_blank" class="btn-icon">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" />
+                </svg>
+            </a>
+            <button class="btn-icon" onclick="toggleSettings()">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.04.17 0 .4.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.04-.22 0-.45-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6-1.62 3.6-3.6 3.6z" />
+                </svg>
+            </button>
+        </div>
     </header>
 
-    <!-- Settings Overlay -->
     <div id="settingsOverlay">
         <div class="settings-card">
-            <h2>⚙️ API Info</h2>
+            <h2>
+                <span>⚙️ Settings</span>
+                <button class="btn-close" onclick="toggleSettings()" title="Close">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                    </svg>
+                </button>
+            </h2>
             <div class="input-group">
-                <label>GitHub Token (ghp_...)</label>
-                <input type="password" id="ghToken" placeholder="Paste Token">
+                <label>GitHub Token</label>
+                <input type="password" id="ghToken" placeholder="ghp_...">
             </div>
             <div class="input-group">
                 <label>Gist ID</label>
-                <input type="text" id="gistId" placeholder="Paste Gist ID">
+                <input type="text" id="gistId" placeholder="Gist ID">
             </div>
-            <button class="btn-confirm" onclick="saveSettings()">Save & Close</button>
+
+            <div class="input-group">
+                <div style="display:flex; gap:10px;">
+                    <div style="flex:2;">
+                        <label>📱 Device Name</label>
+                        <input type="text" id="devName" placeholder="My Galaxy">
+                    </div>
+                    <div style="flex:1;">
+                        <label>📄 Page Size</label>
+                        <input type="number" id="pageSize" placeholder="10" min="1" max="50">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group secure">
+                <label>🔒 Encryption Password</label>
+                <input type="password" id="encKey" placeholder="Current Secret Key">
+            </div>
+
+            <button class="btn-confirm" onclick="saveSettings()">Save Configuration</button>
+            <button class="btn-secondary" onclick="doChangePassword()">Safe: Change Password & Re-encrypt</button>
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="container">
-
         <div class="controls">
             <button class="btn-action btn-load" onclick="doLoad()">⬇️ Load</button>
             <button class="btn-action btn-save" onclick="doSave()">⬆️ Save</button>
 
-            <button class="btn-tool" onclick="doCopy()" title="Copy">
-                <!-- Copy Icon -->
+            <button class="btn-tool" onclick="doCopy()">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
                 </svg>
             </button>
-            <button class="btn-tool clear" onclick="doClear()" title="Clear">
-                <!-- Clear Icon -->
+            <button class="btn-tool clear" onclick="doClear()">
                 <svg viewBox="0 0 24 24">
                     <path
                         d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -398,50 +551,63 @@
 
         <div class="history-section">
             <div class="history-title">
-                <span>History</span>
-                <span style="font-size:0.8em; color:var(--primary); cursor:pointer;" onclick="clearHistory()">Clear
-                    All</span>
+                <span>Global History (Cloud)</span>
             </div>
-            <ul id="historyList" class="history-list">
-                <!-- History Items will be here -->
-            </ul>
+            <ul id="historyList" class="history-list"></ul>
         </div>
     </div>
 
     <div class="status-bar" id="statusBar">Ready</div>
 
     <script>
-        // --- APP LOGIC ---
+        // --- APP LOGIC (V5.1: Pagination & Decryption) ---
+        const DATA_FILE = "gitclip_data.json";
+        const OLD_FILE = "clipboard.txt";
 
         const els = {
             box: document.getElementById('contentBox'),
             token: document.getElementById('ghToken'),
             gist: document.getElementById('gistId'),
+            devName: document.getElementById('devName'),
+            pageSize: document.getElementById('pageSize'),
+            encKey: document.getElementById('encKey'),
             overlay: document.getElementById('settingsOverlay'),
             status: document.getElementById('statusBar'),
-            list: document.getElementById('historyList')
+            list: document.getElementById('historyList'),
+            secureIcon: document.getElementById('secureIcon')
         };
 
-        let config = { token: '', gistId: '' };
-        let historyData = [];
+        let config = { token: '', gistId: '', devName: '', encKey: '', pageSize: 10 };
+        let cloudHistory = []; // Stores the synchronized list
 
         // Init
         (function init() {
             config.token = localStorage.getItem('gh_token') || '';
             config.gistId = localStorage.getItem('gh_gist_id') || '';
+            config.devName = localStorage.getItem('dev_name') || 'Unknown Device';
+            config.encKey = localStorage.getItem('enc_key') || '';
+            config.pageSize = localStorage.getItem('page_size') || 10;
 
             if (config.token) els.token.value = config.token;
             if (config.gistId) els.gist.value = config.gistId;
+            if (config.devName) els.devName.value = config.devName;
+            if (config.pageSize) els.pageSize.value = config.pageSize;
+            if (config.encKey) els.encKey.value = config.encKey;
+
+            updateSecureIcon();
 
             if (!config.token || !config.gistId) {
-                toggleSettings(true); // Show settings if missing
+                toggleSettings(true);
+            } else {
+                doSync(true); // silent sync
             }
-
-            loadHistory();
-            renderHistory();
         })();
 
-        // Settings
+        function updateSecureIcon() {
+            if (config.encKey) els.secureIcon.classList.add('active');
+            else els.secureIcon.classList.remove('active');
+        }
+
         function toggleSettings(forceShow) {
             if (forceShow || els.overlay.style.display === 'none' || els.overlay.style.display === '') {
                 els.overlay.style.display = 'flex';
@@ -453,55 +619,195 @@
         function saveSettings() {
             const t = els.token.value.trim();
             const g = els.gist.value.trim();
-            if (t && g) {
+            const d = els.devName.value.trim();
+            const k = els.encKey.value.trim();
+            const p = els.pageSize.value.trim() || 10;
+
+            if (t && g && d) {
                 localStorage.setItem('gh_token', t);
                 localStorage.setItem('gh_gist_id', g);
-                config.token = t;
-                config.gistId = g;
+                localStorage.setItem('dev_name', d);
+                localStorage.setItem('enc_key', k);
+                localStorage.setItem('page_size', p);
+
+                config = { token: t, gistId: g, devName: d, encKey: k, pageSize: p };
+
+                updateSecureIcon();
                 toggleSettings();
                 setStatus('Settings Saved');
+                doSync(true);
             } else {
-                alert('Please enter both Token and Gist ID');
+                alert('Token, Gist ID, and Device Name are required.');
             }
         }
 
-        // Actions
-        function setStatus(msg) { els.status.innerText = msg; }
+        async function doChangePassword() {
+            if (!config.token || !config.gistId) { alert("Please save basic settings first."); return; }
 
-        function doClear() { els.box.value = ''; setStatus('Cleared'); }
+            const newPass = prompt("Enter NEW Password:\n(All remote history will be re-encrypted)");
+            if (!newPass) return;
 
-        function doCopy() {
-            const txt = els.box.value;
-            if (!txt) return;
+            const oldPass = config.encKey;
+            if (!oldPass) {
+                if (!confirm("No current password set. This will simply encrypt all plain text history. Continue?")) return;
+            }
 
-            els.box.select();
-            els.box.setSelectionRange(0, 99999); // Mobile fix
-
+            setStatus('Processing Re-encryption...');
             try {
-                document.execCommand('copy');
-                setStatus('Copied to Clipboard!');
+                // 1. Fetch All
+                let items = await fetchCloudData();
+                if (items.length === 0) { alert("History empty. Just setting new password."); updatePassword(newPass); return; }
+
+                // 2. Decrypt All items with Old Password (in memory)
+                for (let item of items) {
+                    if (item.content.startsWith('{"v":1')) {
+                        try {
+                            item.content = await decryptText(item.content, oldPass); // Transform to plain
+                        } catch (e) {
+                            alert("Failed to decrypt some items with CURRENT password. \nCannot re-encrypt. Check your current password.");
+                            setStatus("Re-encrypt Failed");
+                            return;
+                        }
+                    }
+                }
+
+                // 3. Encrypt All items with New Password
+                for (let item of items) {
+                    item.content = await encryptText(item.content, newPass);
+                }
+
+                // 4. Upload All
+                await saveCloudData(items);
+
+                // 5. Update Local Config
+                updatePassword(newPass);
+                alert("Success! All data re-encrypted with new password.");
+
             } catch (e) {
-                alert('Copy failed: ' + e);
+                alert("Error during re-encryption: " + e);
+                setStatus("Re-encrypt Error");
+            }
+        }
+
+        function updatePassword(newKey) {
+            config.encKey = newKey;
+            localStorage.setItem('enc_key', newKey);
+            els.encKey.value = newKey;
+            updateSecureIcon();
+            setStatus('Password Changed');
+            // reload list to show updated content
+            doSync(true);
+        }
+
+        function setStatus(msg) { els.status.innerText = msg; }
+        function doClear() { els.box.value = ''; setStatus('Cleared'); }
+        function doCopy() {
+            if (!els.box.value) return;
+            els.box.select();
+            els.box.setSelectionRange(0, 99999);
+            try { document.execCommand('copy'); setStatus('Copied!'); } catch (e) { alert(e); }
+        }
+
+        // --- CRYPTO ---
+        async function deriveKey(password, salt) {
+            const enc = new TextEncoder();
+            const keyMaterial = await window.crypto.subtle.importKey("raw", enc.encode(password), { name: "PBKDF2" }, false, ["deriveKey"]);
+            return window.crypto.subtle.deriveKey({ name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" }, keyMaterial, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+        }
+        function buffToBase64(buff) { return btoa(String.fromCharCode.apply(null, new Uint8Array(buff))); }
+        function base64ToBuff(b64) { return Uint8Array.from(atob(b64), c => c.charCodeAt(0)); }
+
+        async function encryptText(text, password) {
+            try {
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const key = await deriveKey(password, salt);
+                const enc = new TextEncoder();
+                const encryptedParams = await window.crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, enc.encode(text));
+                return JSON.stringify({ v: 1, s: buffToBase64(salt), iv: buffToBase64(iv), d: buffToBase64(encryptedParams) });
+            } catch (e) { throw new Error("Encrypt Fail"); }
+        }
+
+        async function decryptText(jsonStr, password) {
+            try {
+                const pack = JSON.parse(jsonStr);
+                if (!pack.v) return jsonStr;
+                const salt = base64ToBuff(pack.s);
+                const iv = base64ToBuff(pack.iv);
+                const data = base64ToBuff(pack.d);
+                const key = await deriveKey(password, salt);
+                const decrypted = await window.crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+                return new TextDecoder().decode(decrypted);
+            } catch (e) { throw new Error("Decrypt Fail"); }
+        }
+
+        // --- GLOBAL SYNC LOGIC ---
+
+        async function fetchCloudData() {
+            const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                headers: { 'Authorization': `token ${config.token}` }
+            });
+            if (!res.ok) throw new Error(res.status);
+            const data = await res.json();
+
+            if (data.files[DATA_FILE]) {
+                return JSON.parse(data.files[DATA_FILE].content);
+            }
+            if (data.files[OLD_FILE]) {
+                const oldContent = data.files[OLD_FILE].content;
+                return [{ content: oldContent, device: "Old Version", time: new Date().toISOString(), reads: 0 }];
+            }
+            return [];
+        }
+
+        async function saveCloudData(historyArray) {
+            if (historyArray.length > 50) historyArray = historyArray.slice(0, 50);
+            const files = {};
+            files[DATA_FILE] = { content: JSON.stringify(historyArray) };
+
+            await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                method: 'PATCH',
+                headers: { 'Authorization': `token ${config.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ files: files })
+            });
+        }
+
+        async function doSync(silent = false) {
+            if (!config.token) return;
+            if (!silent) setStatus('Syncing History...');
+            try {
+                cloudHistory = await fetchCloudData();
+                renderHistory();
+                if (!silent) setStatus('Synced.');
+            } catch (e) {
+                console.error(e);
+                if (!silent) setStatus('Sync Failed');
             }
         }
 
         async function doLoad() {
-            if (!validateConfig()) return;
+            if (!config.token) { toggleSettings(true); return; }
             setStatus('Loading...');
 
             try {
-                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-                    headers: { 'Authorization': `token ${config.token}` }
-                });
-                if (!res.ok) throw new Error(res.status);
+                cloudHistory = await fetchCloudData();
+                if (cloudHistory.length === 0) { setStatus('History is empty.'); return; }
 
-                const data = await res.json();
-                const file = data.files['clipboard.txt'] || Object.values(data.files)[0];
-                const content = file ? file.content : '';
+                const topItem = cloudHistory[0];
+                let content = topItem.content;
+
+                if (content.startsWith('{"v":1') && config.encKey) {
+                    try { content = await decryptText(content, config.encKey); }
+                    catch (e) { alert("Decrypt Failed"); }
+                }
 
                 els.box.value = content;
+
+                topItem.reads = (topItem.reads || 0) + 1;
+                saveCloudData(cloudHistory); // Read count sync
+
+                renderHistory();
                 setStatus('Loaded!');
-                addToHistory('load', content);
             } catch (e) {
                 alert('Load Error: ' + e);
                 setStatus('Load Failed');
@@ -509,109 +815,149 @@
         }
 
         async function doSave() {
-            if (!validateConfig()) return;
-            const content = els.box.value;
+            if (!config.token) { toggleSettings(true); return; }
+            let content = els.box.value;
             if (!content) return;
             setStatus('Saving...');
 
             try {
-                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `token ${config.token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ files: { 'clipboard.txt': { content: content } } })
-                });
-                if (!res.ok) throw new Error(res.status);
+                cloudHistory = await fetchCloudData();
 
+                if (config.encKey) {
+                    content = await encryptText(content, config.encKey);
+                }
+
+                const newItem = {
+                    content: content,
+                    device: config.devName,
+                    time: new Date().toISOString(),
+                    reads: 0
+                };
+
+                cloudHistory.unshift(newItem);
+                await saveCloudData(cloudHistory);
+
+                renderHistory();
                 setStatus('Saved!');
-                addToHistory('save', content);
             } catch (e) {
                 alert('Save Error: ' + e);
                 setStatus('Save Failed');
             }
         }
 
-        function validateConfig() {
-            if (!config.token || !config.gistId) {
-                alert('Please check Settings');
-                toggleSettings(true);
-                return false;
-            }
-            return true;
-        }
+        // --- PAGINATION & DECRYPTION ---
+        let currentPage = 1;
 
-        // History Logic
-        function loadHistory() {
-            const json = localStorage.getItem('gh_history');
-            historyData = json ? JSON.parse(json) : [];
-        }
+        async function renderHistory() {
+            const list = els.list;
+            list.innerHTML = '';
 
-        function addToHistory(type, content) {
-            if (!content) return;
-            const item = {
-                type: type,
-                content: content,
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-            };
-            // Add to front, limit to 20
-            historyData.unshift(item);
-            if (historyData.length > 20) historyData.pop();
+            const pageSize = parseInt(config.pageSize) || 10;
+            const totalItems = cloudHistory.length;
+            const totalPages = Math.ceil(totalItems / pageSize) || 1;
 
-            localStorage.setItem('gh_history', JSON.stringify(historyData));
-            renderHistory();
-        }
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
 
-        function clearHistory() {
-            if (confirm('Clear history?')) {
-                historyData = [];
-                localStorage.removeItem('gh_history');
-                renderHistory();
-            }
-        }
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageItems = cloudHistory.slice(start, end);
 
-        function restoreFromHistory(index) {
-            const item = historyData[index];
-            if (item) {
-                els.box.value = item.content;
-                setStatus('Restored from History');
-            }
-        }
-
-        function renderHistory() {
-            els.list.innerHTML = '';
-            historyData.forEach((item, index) => {
+            // Render Items
+            for (let item of pageItems) {
                 const li = document.createElement('li');
                 li.className = 'history-item';
 
-                const badgeClass = item.type === 'load' ? 'h-load' : 'h-save';
-                const badgeText = item.type === 'load' ? '⬇️ LOAD' : '⬆️ SAVE';
+                // Decrypt if needed (Memoize result)
+                let previewText = item.content;
+                let isEncrypted = false;
+
+                if (item.content.startsWith('{"v":1')) {
+                    if (item._decrypted) {
+                        previewText = item._decrypted;
+                    } else if (config.encKey) {
+                        try {
+                            const decrypted = await decryptText(item.content, config.encKey);
+                            item._decrypted = decrypted; // Memoize
+                            previewText = decrypted;
+                        } catch (e) {
+                            previewText = "🔒 Decryption Failed";
+                            isEncrypted = true;
+                        }
+                    } else {
+                        previewText = "🔒 Encrypted Content";
+                        isEncrypted = true;
+                    }
+                }
+
+                // Truncate preview
+                if (!isEncrypted && previewText.length > 50) previewText = previewText.substring(0, 50) + "...";
+
+                const date = new Date(item.time);
+                const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const readCount = item.reads || 0;
+                const readColor = readCount > 0 ? '#4caf50' : '#ccc';
+
+                // Active highlight
+                if (els.box.value === (item._decrypted || item.content)) li.classList.add('active-item');
 
                 li.innerHTML = `
                 <div class="h-header">
-                    <span class="h-badge ${badgeClass}">${badgeText}</span>
-                    <span class="h-time">${item.time}</span>
+                    <div class="h-info">
+                        <span class="h-device">${escapeHtml(item.device)}</span>
+                        <span class="h-time">${timeStr}</span>
+                    </div>
                 </div>
-                <div class="h-preview">${escapeHtml(item.content)}</div>
+                <div class="h-header">
+                     <div class="h-preview" style="${isEncrypted ? 'color:#999;font-style:italic;' : ''}">${escapeHtml(previewText)}</div>
+                     <span class="h-reads" style="color:${readColor}">👁️ ${readCount}</span>
+                </div>
             `;
-                li.onclick = () => restoreFromHistory(index);
-                els.list.appendChild(li);
-            });
+
+                li.onclick = async () => {
+                    let content = item.content;
+                    if (content.startsWith('{"v":1')) {
+                        if (item._decrypted) content = item._decrypted;
+                        else if (config.encKey) {
+                            try { content = await decryptText(content, config.encKey); }
+                            catch (e) { alert("Decrypt Failed"); return; }
+                        } else {
+                            alert("Set password to view.");
+                            return;
+                        }
+                    }
+                    els.box.value = content;
+
+                    // Increment read count
+                    item.reads = (item.reads || 0) + 1;
+                    renderHistory(); // Re-render to update read count
+                    saveCloudData(cloudHistory);
+                };
+
+                list.appendChild(li);
+            }
+
+            // Render Pagination Controls
+            if (totalItems > pageSize) {
+                const controls = document.createElement('div');
+                controls.className = 'pagination-controls';
+                controls.innerHTML = `
+                <button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(-1)">◀ Prev</button>
+                <span>Page ${currentPage} / ${totalPages}</span>
+                <button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(1)">Next ▶</button>
+            `;
+                list.appendChild(controls);
+            }
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderHistory();
         }
 
         function escapeHtml(text) {
-            return text
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
-
-        // PWA Service Worker (Optional, for caching if needed later)
-        if ('serviceWorker' in navigator) {
-            // navigator.serviceWorker.register('sw.js');
+            if (!text) return "";
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
     </script>

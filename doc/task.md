@@ -1,0 +1,57 @@
+# Clipboard Sync Tool
+
+- [x] Design Architecture <!-- id: 0 -->
+    - [x] Define Unified Web App logic <!-- id: 1 -->
+- [ ] Implement Web Application <!-- id: 3 -->
+    - [ ] Create `index.html` (Layout) <!-- id: 4 -->
+    - [ ] Create `style.css` (Responsive Design) <!-- id: 5 -->
+    - [ ] Create `app.js` (GitHub API & Logic) <!-- id: 6 -->
+- [x] Implement Web Application <!-- id: 3 -->
+    - [x] Create `index.html` (Layout) <!-- id: 4 -->
+    - [x] Create `style.css` (Responsive Design) <!-- id: 5 -->
+    - [x] Create `app.js` (GitHub API & Logic) <!-- id: 6 -->
+    - [x] Add PWA Support (Manifest, Icon) <!-- id: 17 -->
+- [x] Verify & Walkthrough <!-- id: 11 -->
+    - [x] Test PC Browser usage <!-- id: 12 -->
+    - [x] Test Mobile Browser usage <!-- id: 13 -->
+    - [x] Create usage guide <!-- id: 14 -->
+- [x] UI/UX Improvements <!-- id: 18 -->
+    - [x] Refactor Settings to Icon/Modal <!-- id: 19 -->
+    - [x] Compact Button Layout with Icons <!-- id: 20 -->
+    - [x] Apply "Sophisticated" Design (Glassmorphism/Modern) <!-- id: 21 -->
+- [x] Implement History Feature <!-- id: 22 -->
+    - [x] Save Load/Save actions to LocalStorage <!-- id: 23 -->
+    - [x] Display History List (Direction, Summary) <!-- id: 24 -->
+    - [x] Implement Detail View & Copy from History <!-- id: 25 -->
+- [x] PWA & Mobile Polish <!-- id: 26 -->
+    - [x] Ensure Manifest & Icons are set up <!-- id: 27 -->
+    - [x] Verify "Add to Home Screen" flows <!-- id: 28 -->
+- [x] Implement End-to-End Encryption <!-- id: 29 -->
+    - [x] Update UI to accept "Secret Key" <!-- id: 30 -->
+    - [x] Implement AES-GCM logic (Web Crypto API) <!-- id: 31 -->
+    - [x] Implement End-to-End Encryption <!-- id: 29 -->
+    - [x] Update UI to accept "Secret Key" <!-- id: 30 -->
+    - [x] Implement AES-GCM logic (Web Crypto API) <!-- id: 31 -->
+    - [x] handle Encrypt on Save / Decrypt on Load <!-- id: 32 -->
+- [x] Implement Global Synced History (Cloud History) <!-- id: 33 -->
+    - [x] Change Gist file to `gitclip_data.json` <!-- id: 34 -->
+    - [x] Add "Device Name" in Settings <!-- id: 35 -->
+    - [x] Store/Sync metadata (Who saved, Read count) <!-- id: 36 -->
+    - [x] Store/Sync metadata (Who saved, Read count) <!-- id: 36 -->
+    - [x] Update History UI to show Device & Count <!-- id: 37 -->
+- [x] Implement Password Change (Re-encrypt) <!-- id: 38 -->
+    - [x] Add "Change Password" button in Settings <!-- id: 39 -->
+    - [x] Logic: Batch Decrypt (Old) -> Batch Encrypt (New) -> Save <!-- id: 40 -->
+- [x] Implement History Improvements (V5.1) <!-- id: 41 -->
+    - [x] Decrypt History Previews in List <!-- id: 42 -->
+    - [x] Implement Pagination (Default 10 items) <!-- id: 43 -->
+    - [x] Add "Page Size" setting <!-- id: 44 -->
+- [x] Refinement & Documentation <!-- id: 45 -->
+    - [x] Create `README.md` <!-- id: 46 -->
+    - [x] Link Help/Usage in App (`index.html`) <!-- id: 47 -->
+    - [x] Sync Artifacts to `doc` folder (`task.md`, `implementation_plan.md`, `walkthrough.md`) <!-- id: 48 -->
+    - [x] Git Push <!-- id: 49 -->
+- [x] UI Refinement: Help Button <!-- id: 50 -->
+    - [x] Move Help button to Main Header as Icon <!-- id: 51 -->
+    - [ ] Sync Docs & Push again <!-- id: 52 -->
+    - [x] Immediate Git Push (Core Files) <!-- id: 53 -->

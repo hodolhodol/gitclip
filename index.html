@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitClip FINAL V2</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 15px;
+            background: #eef;
+            margin: 0;
+        }
+
+        .box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Settings Section - ALWAYS VISIBLE */
+        .settings {
+            background: #fee;
+            border: 2px solid #fcc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        .settings input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .settings label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #d00;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            font-size: 16px;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #999;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .btn-load {
+            background: #28a745;
+        }
+
+        .btn-save {
+            background: #007bff;
+        }
+
+        .btn-copy {
+            background: #666;
+            margin-top: 10px;
+        }
+
+        .btn-clear {
+            background: white;
+            color: red;
+            border: 1px solid red;
+        }
+
+        #status {
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            padding: 10px;
+            background: #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="box">
+        <h2>📋 GitClip V2 (Fix)</h2>
+
+        <!-- Settings Area: REMOVED HIDDEN LOGIC -->
+        <div id="setup" class="settings">
+            <label>1. Token (ghp_...)</label>
+            <input type="password" id="tk" placeholder="Paste Token Here" onchange="saveConf()">
+
+            <label>2. Gist ID</label>
+            <input type="text" id="id" placeholder="Paste Gist ID Here" onchange="saveConf()">
+            <div style="text-align:center; font-size:14px; font-weight:bold;">(Type above -> It saves automatically)
+            </div>
+        </div>
+
+        <button class="btn-load" onclick="runLoad()">⬇️ Cloud Load</button>
+        <button class="btn-save" onclick="runSave()">⬆️ Cloud Save</button>
+
+        <textarea id="txt" placeholder="Waiting for input..."></textarea>
+
+        <button class="btn-copy" onclick="runCopy()">📋 Copy Text</button>
+        <button class="btn-clear" onclick="runClear()">❌ Clear</button>
+
+        <div id="status">Status: Waiting...</div>
+    </div>
+
+    <script>
+        // Elements
+        var elSetup = document.getElementById('setup');
+        var elToken = document.getElementById('tk');
+        var elId = document.getElementById('id');
+        var elTxt = document.getElementById('txt');
+        var elStat = document.getElementById('status');
+
+        // Init Visuals
+        elStat.innerText = "Status: Ready.";
+
+        // Load Config
+        var savedT = localStorage.getItem('gh_token');
+        var savedI = localStorage.getItem('gh_gist_id');
+
+        if (savedT) elToken.value = savedT;
+        if (savedI) elId.value = savedI;
+
+        // NEVER HIDE SETTINGS. ALWAYS SHOW.
+
+        // Functions
+        function log(msg) {
+            elStat.innerText = msg;
+        }
+
+        function saveConf() {
+            var t = elToken.value.trim();
+            var i = elId.value.trim();
+            if (t && i) {
+                localStorage.setItem('gh_token', t);
+                localStorage.setItem('gh_gist_id', i);
+                log("Settings Saved!");
+            }
+        }
+
+        function runClear() {
+            elTxt.value = "";
+            log("Cleared.");
+        }
+
+        function runCopy() {
+            if (!elTxt.value) return;
+            elTxt.select();
+            elTxt.setSelectionRange(0, 99999);
+            try {
+                document.execCommand('copy');
+                log("Copied to Clipboard!");
+            } catch (e) {
+                alert("Copy error: " + e);
+            }
+        }
+
+        function runLoad() {
+            var t = elToken.value;
+            var i = elId.value;
+            if (!t || !i) { alert("Please fill Settings (Top Red Box)!"); return; }
+
+            log("Loading...");
+            fetch("https://api.github.com/gists/" + i, {
+                headers: { "Authorization": "token " + t }
+            })
+                .then(function (r) {
+                    if (!r.ok) throw new Error(r.status);
+                    return r.json();
+                })
+                .then(function (d) {
+                    var c = d.files["clipboard.txt"] || Object.values(d.files)[0];
+                    elTxt.value = c ? c.content : "";
+                    log("Loaded!");
+                })
+                .catch(function (e) {
+                    alert("Load Fail: " + e);
+                    log("Load Fail");
+                });
+        }
+
+        function runSave() {
+            var t = elToken.value;
+            var i = elId.value;
+            if (!t || !i) { alert("Please fill Settings (Top Red Box)!"); return; }
+
+            var val = elTxt.value;
+            if (!val) return;
+            log("Saving...");
+
+            fetch("https://api.github.com/gists/" + i, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": "token " + t,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ files: { "clipboard.txt": { content: val } } })
+            })
+                .then(function (r) {
+                    if (!r.ok) throw new Error(r.status);
+                    log("Saved!");
+                })
+                .catch(function (e) {
+                    alert("Save Fail: " + e);
+                    log("Save Fail");
+                });
+        }
+    </script>
+
+</body>
+
+</html>

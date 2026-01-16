@@ -3,241 +3,618 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitClip FINAL V2</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GitClip</title>
+
+    <!-- PWA Support -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- iOS Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GitClip">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 15px;
-            background: #eef;
-            margin: 0;
+        :root {
+            --primary: #007aff;
+            --bg: #f2f2f7;
+            --card: #ffffff;
+            --text: #1c1c1e;
+            --text-sec: #8e8e93;
+            --border: #e5e5ea;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --danger: #ff3b30;
+            --success: #34c759;
         }
 
-        .box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            /* Remove padding to use full screen on mobile */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background: var(--card);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 0 var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Main Container */
+        .container {
+            flex: 1;
+            padding: 20px;
             max-width: 600px;
             margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
         }
 
-        h2 {
+        /* Settings Panel (Overlay) */
+        #settingsOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .settings-card {
+            background: var(--card);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .settings-card h2 {
             margin-top: 0;
-            text-align: center;
-            color: #333;
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
 
-        /* Settings Section - ALWAYS VISIBLE */
-        .settings {
-            background: #fee;
-            border: 2px solid #fcc;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 6px;
+        .input-group {
+            margin-bottom: 15px;
         }
 
-        .settings input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        .settings label {
-            font-weight: bold;
+        .input-group label {
             display: block;
-            margin-bottom: 4px;
-            font-size: 14px;
-            color: #d00;
+            font-size: 0.85rem;
+            color: var(--text-sec);
+            margin-bottom: 5px;
+            font-weight: 600;
         }
 
-        textarea {
+        .input-group input {
             width: 100%;
-            height: 120px;
-            font-size: 16px;
             padding: 10px;
+            border: 1px solid #d1d1d6;
+            border-radius: 8px;
+            font-size: 1rem;
             box-sizing: border-box;
-            border: 1px solid #999;
-            border-radius: 4px;
-            margin-bottom: 10px;
+            background: var(--bg);
         }
 
-        button {
-            width: 100%;
-            padding: 14px;
-            font-size: 18px;
+        .btn-confirm {
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
-            margin-bottom: 8px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
         }
 
+        /* Control Row */
+        .controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action:active {
+            transform: scale(0.98);
+        }
+
         .btn-load {
-            background: #28a745;
+            background: var(--success);
         }
 
         .btn-save {
-            background: #007bff;
+            background: var(--primary);
         }
 
-        .btn-copy {
-            background: #666;
-            margin-top: 10px;
+        .btn-tool {
+            width: 44px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            border-radius: 12px;
+            color: var(--text);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .btn-clear {
-            background: white;
-            color: red;
-            border: 1px solid red;
+        .btn-tool svg {
+            width: 22px;
+            height: 22px;
+            fill: #555;
         }
 
-        #status {
-            text-align: center;
+        .btn-tool.clear svg {
+            fill: var(--danger);
+        }
+
+        /* Text Area */
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            resize: none;
+            font-size: 16px;
+            /* Prevents zoom on iOS */
+            font-family: monospace;
+            box-sizing: border-box;
+            background: var(--card);
+            box-shadow: var(--shadow);
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* History Section */
+        .history-section {
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .history-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-sec);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .history-item {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:active {
+            background: #e5e5ea;
+        }
+
+        .h-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .h-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-weight: bold;
-            color: #555;
-            padding: 10px;
-            background: #ddd;
-            border-radius: 4px;
+        }
+
+        .h-load {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .h-save {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .h-time {
+            font-size: 0.75rem;
+            color: #999;
+        }
+
+        .h-preview {
+            font-size: 0.9rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--card);
+            padding: 8px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-sec);
+            border-top: 1px solid var(--border);
         }
     </style>
 </head>
 
 <body>
 
-    <div class="box">
-        <h2>📋 GitClip V2 (Fix)</h2>
+    <header>
+        <h1>📋 GitClip</h1>
+        <button class="btn-icon" onclick="toggleSettings()">
+            <!-- Gear Icon -->
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.04.17 0 .4.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.58 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.04-.22 0-.45-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+            </svg>
+        </button>
+    </header>
 
-        <!-- Settings Area: REMOVED HIDDEN LOGIC -->
-        <div id="setup" class="settings">
-            <label>1. Token (ghp_...)</label>
-            <input type="password" id="tk" placeholder="Paste Token Here" onchange="saveConf()">
-
-            <label>2. Gist ID</label>
-            <input type="text" id="id" placeholder="Paste Gist ID Here" onchange="saveConf()">
-            <div style="text-align:center; font-size:14px; font-weight:bold;">(Type above -> It saves automatically)
+    <!-- Settings Overlay -->
+    <div id="settingsOverlay">
+        <div class="settings-card">
+            <h2>⚙️ API Info</h2>
+            <div class="input-group">
+                <label>GitHub Token (ghp_...)</label>
+                <input type="password" id="ghToken" placeholder="Paste Token">
             </div>
+            <div class="input-group">
+                <label>Gist ID</label>
+                <input type="text" id="gistId" placeholder="Paste Gist ID">
+            </div>
+            <button class="btn-confirm" onclick="saveSettings()">Save & Close</button>
         </div>
-
-        <button class="btn-load" onclick="runLoad()">⬇️ Cloud Load</button>
-        <button class="btn-save" onclick="runSave()">⬆️ Cloud Save</button>
-
-        <textarea id="txt" placeholder="Waiting for input..."></textarea>
-
-        <button class="btn-copy" onclick="runCopy()">📋 Copy Text</button>
-        <button class="btn-clear" onclick="runClear()">❌ Clear</button>
-
-        <div id="status">Status: Waiting...</div>
     </div>
 
+    <!-- Main Content -->
+    <div class="container">
+
+        <div class="controls">
+            <button class="btn-action btn-load" onclick="doLoad()">⬇️ Load</button>
+            <button class="btn-action btn-save" onclick="doSave()">⬆️ Save</button>
+
+            <button class="btn-tool" onclick="doCopy()" title="Copy">
+                <!-- Copy Icon -->
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z" />
+                </svg>
+            </button>
+            <button class="btn-tool clear" onclick="doClear()" title="Clear">
+                <!-- Clear Icon -->
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+
+        <textarea id="contentBox" placeholder="Type or load content..."></textarea>
+
+        <div class="history-section">
+            <div class="history-title">
+                <span>History</span>
+                <span style="font-size:0.8em; color:var(--primary); cursor:pointer;" onclick="clearHistory()">Clear
+                    All</span>
+            </div>
+            <ul id="historyList" class="history-list">
+                <!-- History Items will be here -->
+            </ul>
+        </div>
+    </div>
+
+    <div class="status-bar" id="statusBar">Ready</div>
+
     <script>
-        // Elements
-        var elSetup = document.getElementById('setup');
-        var elToken = document.getElementById('tk');
-        var elId = document.getElementById('id');
-        var elTxt = document.getElementById('txt');
-        var elStat = document.getElementById('status');
+        // --- APP LOGIC ---
 
-        // Init Visuals
-        elStat.innerText = "Status: Ready.";
+        const els = {
+            box: document.getElementById('contentBox'),
+            token: document.getElementById('ghToken'),
+            gist: document.getElementById('gistId'),
+            overlay: document.getElementById('settingsOverlay'),
+            status: document.getElementById('statusBar'),
+            list: document.getElementById('historyList')
+        };
 
-        // Load Config
-        var savedT = localStorage.getItem('gh_token');
-        var savedI = localStorage.getItem('gh_gist_id');
+        let config = { token: '', gistId: '' };
+        let historyData = [];
 
-        if (savedT) elToken.value = savedT;
-        if (savedI) elId.value = savedI;
+        // Init
+        (function init() {
+            config.token = localStorage.getItem('gh_token') || '';
+            config.gistId = localStorage.getItem('gh_gist_id') || '';
 
-        // NEVER HIDE SETTINGS. ALWAYS SHOW.
+            if (config.token) els.token.value = config.token;
+            if (config.gistId) els.gist.value = config.gistId;
 
-        // Functions
-        function log(msg) {
-            elStat.innerText = msg;
-        }
+            if (!config.token || !config.gistId) {
+                toggleSettings(true); // Show settings if missing
+            }
 
-        function saveConf() {
-            var t = elToken.value.trim();
-            var i = elId.value.trim();
-            if (t && i) {
-                localStorage.setItem('gh_token', t);
-                localStorage.setItem('gh_gist_id', i);
-                log("Settings Saved!");
+            loadHistory();
+            renderHistory();
+        })();
+
+        // Settings
+        function toggleSettings(forceShow) {
+            if (forceShow || els.overlay.style.display === 'none' || els.overlay.style.display === '') {
+                els.overlay.style.display = 'flex';
+            } else {
+                els.overlay.style.display = 'none';
             }
         }
 
-        function runClear() {
-            elTxt.value = "";
-            log("Cleared.");
+        function saveSettings() {
+            const t = els.token.value.trim();
+            const g = els.gist.value.trim();
+            if (t && g) {
+                localStorage.setItem('gh_token', t);
+                localStorage.setItem('gh_gist_id', g);
+                config.token = t;
+                config.gistId = g;
+                toggleSettings();
+                setStatus('Settings Saved');
+            } else {
+                alert('Please enter both Token and Gist ID');
+            }
         }
 
-        function runCopy() {
-            if (!elTxt.value) return;
-            elTxt.select();
-            elTxt.setSelectionRange(0, 99999);
+        // Actions
+        function setStatus(msg) { els.status.innerText = msg; }
+
+        function doClear() { els.box.value = ''; setStatus('Cleared'); }
+
+        function doCopy() {
+            const txt = els.box.value;
+            if (!txt) return;
+
+            els.box.select();
+            els.box.setSelectionRange(0, 99999); // Mobile fix
+
             try {
                 document.execCommand('copy');
-                log("Copied to Clipboard!");
+                setStatus('Copied to Clipboard!');
             } catch (e) {
-                alert("Copy error: " + e);
+                alert('Copy failed: ' + e);
             }
         }
 
-        function runLoad() {
-            var t = elToken.value;
-            var i = elId.value;
-            if (!t || !i) { alert("Please fill Settings (Top Red Box)!"); return; }
+        async function doLoad() {
+            if (!validateConfig()) return;
+            setStatus('Loading...');
 
-            log("Loading...");
-            fetch("https://api.github.com/gists/" + i, {
-                headers: { "Authorization": "token " + t }
-            })
-                .then(function (r) {
-                    if (!r.ok) throw new Error(r.status);
-                    return r.json();
-                })
-                .then(function (d) {
-                    var c = d.files["clipboard.txt"] || Object.values(d.files)[0];
-                    elTxt.value = c ? c.content : "";
-                    log("Loaded!");
-                })
-                .catch(function (e) {
-                    alert("Load Fail: " + e);
-                    log("Load Fail");
+            try {
+                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    headers: { 'Authorization': `token ${config.token}` }
                 });
+                if (!res.ok) throw new Error(res.status);
+
+                const data = await res.json();
+                const file = data.files['clipboard.txt'] || Object.values(data.files)[0];
+                const content = file ? file.content : '';
+
+                els.box.value = content;
+                setStatus('Loaded!');
+                addToHistory('load', content);
+            } catch (e) {
+                alert('Load Error: ' + e);
+                setStatus('Load Failed');
+            }
         }
 
-        function runSave() {
-            var t = elToken.value;
-            var i = elId.value;
-            if (!t || !i) { alert("Please fill Settings (Top Red Box)!"); return; }
+        async function doSave() {
+            if (!validateConfig()) return;
+            const content = els.box.value;
+            if (!content) return;
+            setStatus('Saving...');
 
-            var val = elTxt.value;
-            if (!val) return;
-            log("Saving...");
-
-            fetch("https://api.github.com/gists/" + i, {
-                method: "PATCH",
-                headers: {
-                    "Authorization": "token " + t,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ files: { "clipboard.txt": { content: val } } })
-            })
-                .then(function (r) {
-                    if (!r.ok) throw new Error(r.status);
-                    log("Saved!");
-                })
-                .catch(function (e) {
-                    alert("Save Fail: " + e);
-                    log("Save Fail");
+            try {
+                const res = await fetch(`https://api.github.com/gists/${config.gistId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${config.token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ files: { 'clipboard.txt': { content: content } } })
                 });
+                if (!res.ok) throw new Error(res.status);
+
+                setStatus('Saved!');
+                addToHistory('save', content);
+            } catch (e) {
+                alert('Save Error: ' + e);
+                setStatus('Save Failed');
+            }
         }
+
+        function validateConfig() {
+            if (!config.token || !config.gistId) {
+                alert('Please check Settings');
+                toggleSettings(true);
+                return false;
+            }
+            return true;
+        }
+
+        // History Logic
+        function loadHistory() {
+            const json = localStorage.getItem('gh_history');
+            historyData = json ? JSON.parse(json) : [];
+        }
+
+        function addToHistory(type, content) {
+            if (!content) return;
+            const item = {
+                type: type,
+                content: content,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            };
+            // Add to front, limit to 20
+            historyData.unshift(item);
+            if (historyData.length > 20) historyData.pop();
+
+            localStorage.setItem('gh_history', JSON.stringify(historyData));
+            renderHistory();
+        }
+
+        function clearHistory() {
+            if (confirm('Clear history?')) {
+                historyData = [];
+                localStorage.removeItem('gh_history');
+                renderHistory();
+            }
+        }
+
+        function restoreFromHistory(index) {
+            const item = historyData[index];
+            if (item) {
+                els.box.value = item.content;
+                setStatus('Restored from History');
+            }
+        }
+
+        function renderHistory() {
+            els.list.innerHTML = '';
+            historyData.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+
+                const badgeClass = item.type === 'load' ? 'h-load' : 'h-save';
+                const badgeText = item.type === 'load' ? '⬇️ LOAD' : '⬆️ SAVE';
+
+                li.innerHTML = `
+                <div class="h-header">
+                    <span class="h-badge ${badgeClass}">${badgeText}</span>
+                    <span class="h-time">${item.time}</span>
+                </div>
+                <div class="h-preview">${escapeHtml(item.content)}</div>
+            `;
+                li.onclick = () => restoreFromHistory(index);
+                els.list.appendChild(li);
+            });
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // PWA Service Worker (Optional, for caching if needed later)
+        if ('serviceWorker' in navigator) {
+            // navigator.serviceWorker.register('sw.js');
+        }
+
     </script>
-
 </body>
 
 </html>
